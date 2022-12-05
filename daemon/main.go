@@ -9,16 +9,19 @@ import (
 )
 
 func main() {
-	fl, err := NewFlock("/tmp/watchmen-daemon.pid")
-	if err != nil {
-		panic(err)
-	}
-	if err := fl.TryLock(); err != nil {
-		fmt.Println(err)
-		os.Exit(kExitCodeAlreadyRunning)
-	}
+	var multiInstance bool = true
+	if !multiInstance {
+		fl, err := NewFlock("/tmp/watchmen-daemon.pid")
+		if err != nil {
+			panic(err)
+		}
+		if err := fl.TryLock(); err != nil {
+			fmt.Println(err)
+			os.Exit(kExitCodeAlreadyRunning)
+		}
 
-	defer fl.Close()
+		defer fl.Close()
+	}
 
 	c := parseFlag()
 

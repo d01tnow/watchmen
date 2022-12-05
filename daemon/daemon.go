@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/crypto"
@@ -28,7 +29,8 @@ type Daemon struct {
 
 	webListenPort int // web listening port
 
-	mu sync.Mutex
+	mu    sync.Mutex
+	peers map[peer.ID]*Peer
 }
 
 type option func(*Daemon)
@@ -51,7 +53,19 @@ func (d *Daemon) Run() {
 
 // HandlePeerFound - 实现 mdns.Notifee 接口, 处理' 发现mdns 服务'
 func (d *Daemon) HandlePeerFound(pi peer.AddrInfo) {
-	slog.Info("found peer", "peer", pi.ID)
+	slog.Info("found peer", "peer", pi.ID, "addr", pi.Addrs)
+	_, ok := d.peers[pi.ID]
+	if !ok {
+		// not found, create
+		d.peers[pi.ID] = &Peer{
+			p:         pi,
+			FoundAt:   time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		return
+	}
+	// found, update
+	d.peers[pi.ID].UpdatedAt = time.Now()
 }
 
 func (d *Daemon) Init(opts ...option) {
