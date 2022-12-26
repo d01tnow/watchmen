@@ -144,6 +144,7 @@ func (d *Daemon) initMdns() {
 func (d *Daemon) serve() {
 	router := gin.New()
 	router.GET("/version", d.handleVersion)
+	router.GET("/component/all", d.componentAll)
 	addr := d.webListenAddr()
 
 	srv := &http.Server{
@@ -174,4 +175,7 @@ func (d *Daemon) handleVersion(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"version": kVersion,
 	})
+}
+func (d *Daemon) componentAll(c *gin.Context) {
+
 }
